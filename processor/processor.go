@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"bytetrade.io/web3os/article-extractor/readability"
-	"bytetrade.io/web3os/article-extractor/rewrite"
-	"bytetrade.io/web3os/article-extractor/sanitizer"
-	"bytetrade.io/web3os/article-extractor/templates"
-	"bytetrade.io/web3os/article-extractor/templates/postExtractor"
+	"github.com/Above-Os/article-extractor/readability"
+	"github.com/Above-Os/article-extractor/rewrite"
+	"github.com/Above-Os/article-extractor/sanitizer"
+	"github.com/Above-Os/article-extractor/templates"
+	"github.com/Above-Os/article-extractor/templates/postExtractor"
 	"github.com/PuerkitoBio/goquery"
 )
 

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"text/scanner"
 
-	"bytetrade.io/web3os/article-extractor/url"
+	"github.com/Above-Os/article-extractor/url"
 )
 
 type rule struct {

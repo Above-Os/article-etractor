@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"bytetrade.io/web3os/article-extractor/url"
+	"github.com/Above-Os/article-extractor/url"
 	"golang.org/x/net/html"
 )
 

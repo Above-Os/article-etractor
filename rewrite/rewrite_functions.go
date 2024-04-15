@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"bytetrade.io/web3os/article-extractor/readability"
+	"github.com/Above-Os/article-extractor/readability"
 	"github.com/PuerkitoBio/goquery"
 )
 

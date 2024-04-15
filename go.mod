@@ -1,4 +1,4 @@
-module bytetrade.io/web3os/article-extractor
+module github.com/Above-Os/article-extractor
 
 go 1.20
 
