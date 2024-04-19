@@ -2,12 +2,12 @@ package templates
 
 import (
 	"encoding/json"
+	"log"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type ViceMetaData struct {
@@ -61,14 +61,14 @@ func (t *Template) ViceScrapMetaData(document *goquery.Document) (string, string
 			scriptContent := strings.TrimSpace(s.Text())
 			validScriptContent, modifyViceInvalidJsonErr := modifyViceInvalidJSON(scriptContent)
 			if modifyViceInvalidJsonErr != nil {
-				logger.Info("convert Vic invalid json to valid json error %v", modifyViceInvalidJsonErr)
+				log.Printf("convert Vic invalid json to valid json error %v", modifyViceInvalidJsonErr)
 				return
 			}
 
 			var firstTypeMetaData ViceMetaData
 			unmarshalErr := json.Unmarshal([]byte(validScriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert viceMetadata unmarshalError %v", unmarshalErr)
+				log.Printf("convert viceMetadata unmarshalError %v", unmarshalErr)
 				return
 			}
 			for _, currentGraph := range firstTypeMetaData.Graph {
@@ -86,7 +86,7 @@ func (t *Template) ViceScrapMetaData(document *goquery.Document) (string, string
 			break
 		}
 	}
-	logger.Info("author last: %s", author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
@@ -112,13 +112,13 @@ func (t *Template) VicePublishedAtTimeFromScriptMetadata(document *goquery.Docum
 			scriptContent := strings.TrimSpace(s.Text())
 			validScriptContent, modifyViceInvalidJsonErr := modifyViceInvalidJSON(scriptContent)
 			if modifyViceInvalidJsonErr != nil {
-				logger.Info("convert Vic invalid json to valid json error %v", modifyViceInvalidJsonErr)
+				log.Printf("convert Vic invalid json to valid json error %v", modifyViceInvalidJsonErr)
 				return
 			}
 			var firstTypeMetaData ViceMetaData
 			unmarshalErr := json.Unmarshal([]byte(validScriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
@@ -128,7 +128,7 @@ func (t *Template) VicePublishedAtTimeFromScriptMetadata(document *goquery.Docum
 				}
 				convertPublieshedAt, parseViceTimeErr := parseViceTimestamp(currentGraph.DatePublished)
 				if parseViceTimeErr != nil {
-					logger.Error("error convert Vice time to timestamp")
+					log.Printf("error convert Vice time to timestamp")
 					continue
 				}
 				publishedAt = convertPublieshedAt

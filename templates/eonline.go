@@ -3,11 +3,11 @@ package templates
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type EOnlineMetadata struct {
@@ -70,7 +70,7 @@ func (t *Template) EonlineScrapMetaData(document *goquery.Document) (string, str
 			var firstTypeMetaData EOnlineMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 			}
 			for _, currentAuthor := range firstTypeMetaData.Author {
@@ -85,7 +85,7 @@ func (t *Template) EonlineScrapMetaData(document *goquery.Document) (string, str
 			break
 		}
 	}
-	logger.Info("author last: %s", author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
@@ -112,14 +112,14 @@ func (t *Template) EonlinePublishedAtTimeFromScriptMetadata(document *goquery.Do
 			var firstTypeMetaData EOnlineMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
 			fmt.Println(firstTypeMetaData.DatePublished)
 			currentParsedPublishedAt, convertErr := ConvertISORFC3339MiliToTimestamp(firstTypeMetaData.DatePublished)
 			if convertErr != nil {
-				logger.Info("convert str timestamp error %v", convertErr)
+				log.Printf("convert str timestamp error %v", convertErr)
 				return
 			}
 			publishedAt = currentParsedPublishedAt

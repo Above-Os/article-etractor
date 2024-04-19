@@ -2,12 +2,13 @@ package templates
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
+
 type ESPNMetaDataWithAuthor struct {
 	Context          string `json:"@context"`
 	Type             string `json:"@type"`
@@ -15,8 +16,8 @@ type ESPNMetaDataWithAuthor struct {
 		Type string `json:"@type"`
 		ID   string `json:"@id"`
 	} `json:"mainEntityOfPage"`
-	Headline      string    `json:"headline"`
-	Description   string    `json:"description"`
+	Headline      string `json:"headline"`
+	Description   string `json:"description"`
 	DatePublished string `json:"datePublished"`
 	DateModified  string `json:"dateModified"`
 	Image         struct {
@@ -48,8 +49,8 @@ type ESPNMetaDataWithoutAuthor struct {
 		Type string `json:"@type"`
 		ID   string `json:"@id"`
 	} `json:"mainEntityOfPage"`
-	Headline      string    `json:"headline"`
-	Description   string    `json:"description"`
+	Headline      string `json:"headline"`
+	Description   string `json:"description"`
 	DatePublished string `json:"datePublished"`
 	DateModified  string `json:"dateModified"`
 	Image         struct {
@@ -69,6 +70,7 @@ type ESPNMetaDataWithoutAuthor struct {
 		} `json:"logo"`
 	} `json:"publisher"`
 }
+
 func (t *Template) EspnScrapContent(document *goquery.Document) string {
 
 	contents := ""
@@ -82,7 +84,6 @@ func (t *Template) EspnScrapContent(document *goquery.Document) string {
 	})
 	return contents
 }
-
 
 func (t *Template) ESPNScrapMetaData(document *goquery.Document) (string, string) {
 
@@ -107,9 +108,9 @@ func (t *Template) ESPNScrapMetaData(document *goquery.Document) (string, string
 			var firstTypeMetaData ESPNMetaDataWithAuthor
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert espn unmarshalError %v", unmarshalErr)
-				
-			}else{
+				log.Printf("convert espn unmarshalError %v", unmarshalErr)
+
+			} else {
 				author = firstTypeMetaData.Author.Name
 			}
 
@@ -120,9 +121,9 @@ func (t *Template) ESPNScrapMetaData(document *goquery.Document) (string, string
 			var secondTypeMetaData ESPNMetaDataWithoutAuthor
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert espn unmarshalError %v", unmarshalErr)
-				
-			}else{
+				log.Printf("convert espn unmarshalError %v", unmarshalErr)
+
+			} else {
 				author = secondTypeMetaData.Publisher.Name
 			}
 
@@ -157,13 +158,13 @@ func (t *Template) ESPNPublishedAtTimeFromScriptMetadata(document *goquery.Docum
 			var firstTypeMetaData ESPNMetaDataWithAuthor
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert spn unmarshalError %v", unmarshalErr)
-			}else{
+				log.Printf("convert spn unmarshalError %v", unmarshalErr)
+			} else {
 				parsedPublishedAt, parseErr := StringToTimestampEspn(firstTypeMetaData.DatePublished)
 				if parseErr != nil {
-				   logger.Error("espn convert timestamp fail %v",parsedPublishedAt)
-				   
-				}else{
+					log.Printf("espn convert timestamp fail %v", parsedPublishedAt)
+
+				} else {
 					publishedAt = parsedPublishedAt
 				}
 				// publishedAt = firstTypeMetaData.DatePublished.Unix()
@@ -175,16 +176,16 @@ func (t *Template) ESPNPublishedAtTimeFromScriptMetadata(document *goquery.Docum
 			var secondTypeMetaData ESPNMetaDataWithoutAuthor
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert espn unmarshalError %v", unmarshalErr)
-				
-			}else{
+				log.Printf("convert espn unmarshalError %v", unmarshalErr)
+
+			} else {
 				// fmt.Printf("------------ %s",secondTypeMetaData.DatePublished)
 
 				parsedPublishedAt, parseErr := StringToTimestampEspn(secondTypeMetaData.DatePublished)
 				if parseErr != nil {
-				   logger.Error("espn convert timestamp fail %v",parsedPublishedAt)
-				   
-				}else{
+					log.Printf("espn convert timestamp fail %v", parsedPublishedAt)
+
+				} else {
 					publishedAt = parsedPublishedAt
 				}
 			}
@@ -195,12 +196,11 @@ func (t *Template) ESPNPublishedAtTimeFromScriptMetadata(document *goquery.Docum
 	return publishedAt
 }
 
-
 func StringToTimestampEspn(datetimeStr string) (int64, error) {
-	layout := time.RFC3339 
+	layout := time.RFC3339
 	t, err := time.Parse(layout, datetimeStr)
 	if err != nil {
-		return 0, err 
+		return 0, err
 	}
-	return t.Unix(), nil 
+	return t.Unix(), nil
 }

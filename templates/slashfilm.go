@@ -2,11 +2,11 @@ package templates
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type SlashfilmMetadata struct {
@@ -41,7 +41,7 @@ type SlashfilmMetadata struct {
 		Name       string   `json:"name"`
 		URL        string   `json:"url"`
 		KnowsAbout []string `json:"knowsAbout"`
-		SameAs []string `json:"sameAs"`
+		SameAs     []string `json:"sameAs"`
 	} `json:"author"`
 	Publisher struct {
 		Type string `json:"@type"`
@@ -81,13 +81,13 @@ func (t *Template) SlashfilmScrapMetaData(document *goquery.Document) (string, s
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData SlashfilmMetadata;
+			var firstTypeMetaData SlashfilmMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 			}
-			for _,currentAuthor := range firstTypeMetaData.Author {
+			for _, currentAuthor := range firstTypeMetaData.Author {
 				if len(author) != 0 {
 					author = author + " & "
 				}
@@ -99,11 +99,11 @@ func (t *Template) SlashfilmScrapMetaData(document *goquery.Document) (string, s
 			break
 		}
 	}
-    logger.Info("author last: %s",author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
-func (t* Template) SlashfilmNewsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
+func (t *Template) SlashfilmNewsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
 
 	var publishedAt int64 = 0
 
@@ -123,10 +123,10 @@ func (t* Template) SlashfilmNewsPublishedAtTimeFromScriptMetadata(document *goqu
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData SlashfilmMetadata;
+			var firstTypeMetaData SlashfilmMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}

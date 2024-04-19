@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	//"recommend.common/logger"
 )
 
 func (t *Template) YahooNewsScrapMetaData(document *goquery.Document) (string, string) {

@@ -2,11 +2,11 @@ package templates
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type BusinessInsiderMetaData struct {
@@ -160,7 +160,7 @@ func (t *Template) BusinessinsiderScrapMetaData(document *goquery.Document) (str
 			var firstTypeMetaData BusinessInsiderMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 
 			} else {
 				author = firstTypeMetaData.Author.Name
@@ -171,7 +171,7 @@ func (t *Template) BusinessinsiderScrapMetaData(document *goquery.Document) (str
 			var secondTypeMetaData BusinessInsiderMetaDataSecond
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 
 			} else {
 				for _, currentAuthor := range secondTypeMetaData.Author {
@@ -190,7 +190,7 @@ func (t *Template) BusinessinsiderScrapMetaData(document *goquery.Document) (str
 			break
 		}
 	}
-	logger.Info("author last: %s", author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
@@ -217,7 +217,7 @@ func (t *Template) BusinessinsiderPublishedAtTimeFromScriptMetadata(document *go
 			var firstTypeMetaData BusinessInsiderMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 
 			} else {
 				publishedAt = firstTypeMetaData.DatePublished.Unix()
@@ -228,7 +228,7 @@ func (t *Template) BusinessinsiderPublishedAtTimeFromScriptMetadata(document *go
 			var secondTypeMetaData BusinessInsiderMetaDataSecond
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 
 			} else {
 				publishedAt = secondTypeMetaData.DatePublished.Unix()

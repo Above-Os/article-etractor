@@ -2,11 +2,11 @@ package templates
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type BBCNewsMetadataSecond struct {
@@ -137,7 +137,7 @@ func (t *Template) BBCNewsScrapMetaData(document *goquery.Document) (string, str
 			var firstTypeMetaData BBCNewsMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 
 			} else {
 				for _, currentAuthor := range firstTypeMetaData.Author {
@@ -157,7 +157,7 @@ func (t *Template) BBCNewsScrapMetaData(document *goquery.Document) (string, str
 			var secondTypeMetaData BBCNewsMetadataSecond
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 			}
 			author = secondTypeMetaData.Author.Name
@@ -191,10 +191,9 @@ func (t *Template) BBCNewsPublishedAtTimeFromScriptMetadata(document *goquery.Do
 			var firstTypeMetaData BBCNewsMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
-				
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 
-			}else{
+			} else {
 				publishedAt = firstTypeMetaData.DatePublished.Unix()
 			}
 
@@ -204,7 +203,7 @@ func (t *Template) BBCNewsPublishedAtTimeFromScriptMetadata(document *goquery.Do
 			var secondTypeMetaData BBCNewsMetadataSecond
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 			}
 			publishedAt = secondTypeMetaData.DatePublished.Unix()

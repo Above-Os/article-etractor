@@ -2,11 +2,11 @@ package templates
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 func extractEditionCnnValues(text string) (names []string, dates []string) {
@@ -29,7 +29,6 @@ func extractEditionCnnValues(text string) (names []string, dates []string) {
 	return names, dates
 }
 
-
 func (t *Template) EditionCnnScrapMetaData(document *goquery.Document) (string, string) {
 
 	author := ""
@@ -50,11 +49,11 @@ func (t *Template) EditionCnnScrapMetaData(document *goquery.Document) (string, 
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			nameList,_ := extractEditionCnnValues(scriptContent)
-			for _,currentName := range nameList {
+			nameList, _ := extractEditionCnnValues(scriptContent)
+			for _, currentName := range nameList {
 				if len(author) != 0 {
 					author = author + " & " + currentName
-				}else{
+				} else {
 					author = currentName
 				}
 			}
@@ -64,11 +63,11 @@ func (t *Template) EditionCnnScrapMetaData(document *goquery.Document) (string, 
 			break
 		}
 	}
-    logger.Info("author last: %s",author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
-func (t* Template) EditionCnnPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
+func (t *Template) EditionCnnPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
 
 	var publishedAt int64 = 0
 
@@ -88,7 +87,7 @@ func (t* Template) EditionCnnPublishedAtTimeFromScriptMetadata(document *goquery
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			_,timeList := extractEditionCnnValues(scriptContent)
+			_, timeList := extractEditionCnnValues(scriptContent)
 			fmt.Println(timeList)
 			//publishedAt = firstTypeMetaData[0].DatePublished.Unix()
 		})
@@ -96,5 +95,3 @@ func (t* Template) EditionCnnPublishedAtTimeFromScriptMetadata(document *goquery
 	}
 	return publishedAt
 }
-
-

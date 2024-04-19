@@ -3,11 +3,11 @@ package templates
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type SkySportsMetaData struct {
@@ -73,7 +73,7 @@ func (t *Template) SkySportsScrapMetaData(document *goquery.Document) (string, s
 			var firstTypeMetaData SkySportsMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
@@ -83,7 +83,7 @@ func (t *Template) SkySportsScrapMetaData(document *goquery.Document) (string, s
 			break
 		}
 	}
-	logger.Info("author last: %s", author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
@@ -110,14 +110,14 @@ func (t *Template) SkySportsPublishedAtTimeFromScriptMetadata(document *goquery.
 			var firstTypeMetaData SkySportsMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
 			fmt.Println(firstTypeMetaData.DatePublished)
 			parsedPublisedAt, publishedAtparseErr := parseToTimestampSkysports(firstTypeMetaData.DatePublished)
 			if publishedAtparseErr != nil {
-				logger.Error("parse skysport time error %v", publishedAtparseErr)
+				log.Printf("parse skysport time error %v", publishedAtparseErr)
 				return
 			}
 			publishedAt = parsedPublisedAt

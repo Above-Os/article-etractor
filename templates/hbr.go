@@ -1,12 +1,11 @@
 package templates
 
 import (
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
-	//"recommend.common/logger"
 )
 
 func (t *Template) HBRScrapContent(document *goquery.Document) string {
@@ -41,12 +40,12 @@ func (t *Template) HBRPublishedAtTimeFromScriptMetadata(document *goquery.Docume
 
 	content, exists := document.Find("meta[property='article:published_time']").Attr("content")
 	if !exists {
-		logger.Error("Specified tag not found")
+		log.Printf("Specified tag not found")
 	} else {
 
 		publishedTime, err := time.Parse(time.RFC3339, content)
 		if err != nil {
-			logger.Error("parse hbr time err")
+			log.Printf("parse hbr time err")
 		} else {
 
 			publishedAt = publishedTime.Unix()

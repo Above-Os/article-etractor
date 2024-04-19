@@ -2,12 +2,11 @@ package templates
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
-	//"recommend.common/logger"
 )
 
 type CNCFMetaData struct {
@@ -103,13 +102,13 @@ func (t *Template) CNCFScrapMetaData(document *goquery.Document) (string, string
 			var firstTypeMetaData CNCFMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 			}
-			for _,currentGraph := range firstTypeMetaData.Graph {
+			for _, currentGraph := range firstTypeMetaData.Graph {
 				if len(currentGraph.Author.Name) != 0 {
 					author = author + " & " + currentGraph.Author.Name
-				}else{
+				} else {
 					author = currentGraph.Author.Name
 				}
 			}
@@ -118,7 +117,7 @@ func (t *Template) CNCFScrapMetaData(document *goquery.Document) (string, string
 			break
 		}
 	}
-	logger.Info("author last: %s", author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
@@ -145,12 +144,12 @@ func (t *Template) CNCFPublishedAtTimeFromScriptMetadata(document *goquery.Docum
 			var firstTypeMetaData CNCFMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
 
-			for _,currentGraph := range firstTypeMetaData.Graph {
+			for _, currentGraph := range firstTypeMetaData.Graph {
 				if currentGraph.DatePublished.Unix() > 0 {
 					publishedAt = currentGraph.DatePublished.Unix()
 					break
@@ -162,5 +161,3 @@ func (t *Template) CNCFPublishedAtTimeFromScriptMetadata(document *goquery.Docum
 	}
 	return publishedAt
 }
-
-

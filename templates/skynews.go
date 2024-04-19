@@ -2,11 +2,11 @@ package templates
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type SkyNewsMetaData struct {
@@ -75,24 +75,24 @@ func (t *Template) SkyNewsScrapMetaData(document *goquery.Document) (string, str
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData SkyNewsMetaData;
+			var firstTypeMetaData SkyNewsMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
-			author=firstTypeMetaData.Author.Name
+			author = firstTypeMetaData.Author.Name
 		})
 		if author != "" {
 			break
 		}
 	}
-    logger.Info("author last: %s",author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
-func (t* Template) SkyNewsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
+func (t *Template) SkyNewsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
 
 	var publishedAt int64 = 0
 
@@ -112,10 +112,10 @@ func (t* Template) SkyNewsPublishedAtTimeFromScriptMetadata(document *goquery.Do
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData SkyNewsMetaData;
+			var firstTypeMetaData SkyNewsMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}

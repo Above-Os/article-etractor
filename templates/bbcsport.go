@@ -3,11 +3,11 @@ package templates
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type BBCSportMetaDataFirst struct {
@@ -74,8 +74,6 @@ type BBCSportMetaDataSecond struct {
 	} `json:"author"`
 }
 
-
-
 func (t *Template) BBCSportsScrapMetaData(document *goquery.Document) (string, string) {
 
 	author := ""
@@ -96,16 +94,16 @@ func (t *Template) BBCSportsScrapMetaData(document *goquery.Document) (string, s
 			}
 			scriptContent := strings.TrimSpace(s.Text())
 
-			var firstTypeMetaData BBCSportMetaDataFirst;
+			var firstTypeMetaData BBCSportMetaDataFirst
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert convert bbc news unmarshalError %v",unmarshalErr) 
-			}else{
-				for _,currentAuthor := range firstTypeMetaData.Author {
-					if len(currentAuthor.Name) != 0{
+				log.Printf("convert convert bbc news unmarshalError %v", unmarshalErr)
+			} else {
+				for _, currentAuthor := range firstTypeMetaData.Author {
+					if len(currentAuthor.Name) != 0 {
 						if len(author) != 0 {
 							author = author + " & " + currentAuthor.Name
-						}else{
+						} else {
 							author = currentAuthor.Name
 						}
 					}
@@ -114,11 +112,11 @@ func (t *Template) BBCSportsScrapMetaData(document *goquery.Document) (string, s
 			if len(author) != 0 {
 				return
 			}
-			
-			var secondTypeMetaData BBCSportMetaDataSecond;
+
+			var secondTypeMetaData BBCSportMetaDataSecond
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Error("convert BBCSport unmarshalErr %v \n %s",unmarshalErr,scriptContent)
+				log.Printf("convert BBCSport unmarshalErr %v \n %s", unmarshalErr, scriptContent)
 				return
 			}
 			author = secondTypeMetaData.Author.Name
@@ -135,17 +133,17 @@ func (t *Template) BBCSportsScrapMetaData(document *goquery.Document) (string, s
 			if len(trimmedText) != 0 {
 				if len(author) == 0 {
 					author = trimmedText
-				}else{
+				} else {
 					author = author + " & " + trimmedText
 				}
 			}
 		})
 	}
-    logger.Info("author last: %s",author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
-func (t* Template) BBCSportsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
+func (t *Template) BBCSportsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
 
 	var publishedAt int64 = 0
 
@@ -165,22 +163,22 @@ func (t* Template) BBCSportsPublishedAtTimeFromScriptMetadata(document *goquery.
 			}
 
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData BBCSportMetaDataFirst;
+			var firstTypeMetaData BBCSportMetaDataFirst
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
-			}else{
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+			} else {
 				publishedAt = firstTypeMetaData.DatePublished.Unix()
 			}
-			
+
 			if publishedAt != 0 {
 				return
 			}
 
-			var secondTypeMetaData BBCSportMetaDataSecond;
+			var secondTypeMetaData BBCSportMetaDataSecond
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Error("convert BBCSport unmarshalErr %v",unmarshalErr)
+				log.Printf("convert BBCSport unmarshalErr %v", unmarshalErr)
 				return
 			}
 			publishedAt = secondTypeMetaData.DatePublished.Unix()
@@ -193,7 +191,7 @@ func (t* Template) BBCSportsPublishedAtTimeFromScriptMetadata(document *goquery.
 		if datetime, exists := timeTag.Attr("datetime"); exists {
 			parsedTime, err := time.Parse(time.RFC3339, datetime)
 			if err != nil {
-				logger.Error("Error parsing datetime: %v", err)
+				log.Printf("Error parsing datetime: %v", err)
 			}
 			timestamp := parsedTime.Unix()
 			publishedAt = timestamp
@@ -203,4 +201,3 @@ func (t* Template) BBCSportsPublishedAtTimeFromScriptMetadata(document *goquery.
 	}
 	return publishedAt
 }
-

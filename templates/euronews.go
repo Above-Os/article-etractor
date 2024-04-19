@@ -3,13 +3,13 @@ package templates
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 // site url  https://www.euronews.com/news/international
@@ -110,73 +110,72 @@ type EuronewsMetadata struct {
 	} `json:"@graph"`
 }
 
-func ConvertInterfaceToArrayOfMaps(value interface{}) ([]map[string]interface{}, error) {  
-   if valueSlice, ok := value.([]interface{}); ok {  
-       currentMapSlice := []map[string]interface{}{};
-       for _, currentMapInterface := range valueSlice{
-         currentMap, currentMapErr := ConvertInterfaceToMap(currentMapInterface)
-         if currentMapErr == nil {
-            currentMapSlice = append(currentMapSlice,currentMap)
-         }else{
+func ConvertInterfaceToArrayOfMaps(value interface{}) ([]map[string]interface{}, error) {
+	if valueSlice, ok := value.([]interface{}); ok {
+		currentMapSlice := []map[string]interface{}{}
+		for _, currentMapInterface := range valueSlice {
+			currentMap, currentMapErr := ConvertInterfaceToMap(currentMapInterface)
+			if currentMapErr == nil {
+				currentMapSlice = append(currentMapSlice, currentMap)
+			} else {
 
-         }
-       }
-       return currentMapSlice, nil  
-   } else if valueMap, ok := value.(map[string]interface{}); ok {  
-       valueSlice := make([]map[string]interface{}, 1)  
-       valueSlice[0] = valueMap  
-       return valueSlice, nil  
-   } else {  
-       return nil, fmt.Errorf("value is not a []map[string]interface{} or map[string]interface{}")  
-   }  
+			}
+		}
+		return currentMapSlice, nil
+	} else if valueMap, ok := value.(map[string]interface{}); ok {
+		valueSlice := make([]map[string]interface{}, 1)
+		valueSlice[0] = valueMap
+		return valueSlice, nil
+	} else {
+		return nil, fmt.Errorf("value is not a []map[string]interface{} or map[string]interface{}")
+	}
 }
 
-func EuronewsConvertSecond(timeStr string)int64{
-   pattern := `(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) ([+-])(\d{2}):(\d{2})`  
-  
-	re, err := regexp.Compile(pattern)  
-	if err != nil {  
-		fmt.Println("Error compiling regex:", err)  
-		return  0
-	}  
-   matches := re.FindStringSubmatch(timeStr)  
-   if matches != nil {
-      pureTimeStr := matches[1]
-      positiveNegative := matches[2]
-      var prefixNumber int64= 1
-      if positiveNegative == "+"{
-         prefixNumber = -1
-      }
+func EuronewsConvertSecond(timeStr string) int64 {
+	pattern := `(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) ([+-])(\d{2}):(\d{2})`
 
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		fmt.Println("Error compiling regex:", err)
+		return 0
+	}
+	matches := re.FindStringSubmatch(timeStr)
+	if matches != nil {
+		pureTimeStr := matches[1]
+		positiveNegative := matches[2]
+		var prefixNumber int64 = 1
+		if positiveNegative == "+" {
+			prefixNumber = -1
+		}
 
-      timezone := matches[3]
-      strconv.ParseInt(timezone,10,64)
-      timeZoneValue,parseIntErr:= strconv.ParseInt(timezone, 10, 64)
-      if parseIntErr != nil {
-         logger.Info("parseIntErr %v",parseIntErr)
-         return 0
-      }
+		timezone := matches[3]
+		strconv.ParseInt(timezone, 10, 64)
+		timeZoneValue, parseIntErr := strconv.ParseInt(timezone, 10, 64)
+		if parseIntErr != nil {
+			log.Printf("parseIntErr %v", parseIntErr)
+			return 0
+		}
 
-      logger.Info("pureTimeStr %s positiveNegative %s timezone %s",pureTimeStr,positiveNegative,timezone)
-      layout := time.DateTime
+		log.Printf("pureTimeStr %s positiveNegative %s timezone %s", pureTimeStr, positiveNegative, timezone)
+		layout := time.DateTime
 
-      t, err := time.Parse(layout, pureTimeStr)
-      if err != nil {
-         logger.Info("convert str time to golang time fail %s error %v", pureTimeStr, err)
-         return 0
-      }
-      return t.Unix()+prefixNumber*timeZoneValue*3600
+		t, err := time.Parse(layout, pureTimeStr)
+		if err != nil {
+			log.Printf("convert str time to golang time fail %s error %v", pureTimeStr, err)
+			return 0
+		}
+		return t.Unix() + prefixNumber*timeZoneValue*3600
 
-   }else{
-      return 0
-   }
+	} else {
+		return 0
+	}
 
 }
 
-func (t*Template) EuroNewsGetPublishedAtTimeStampStruct(document *goquery.Document) int64 {
-   // 2024-02-18 11:33:12
-   // 2024-02-19 13:26:27 +01:00
-   var publishedAt int64 = 0
+func (t *Template) EuroNewsGetPublishedAtTimeStampStruct(document *goquery.Document) int64 {
+	// 2024-02-18 11:33:12
+	// 2024-02-19 13:26:27 +01:00
+	var publishedAt int64 = 0
 	scriptSelectorFirst := "head > script[type=\"application/ld+json\"]"
 	scriptSelectorSecond := "body > script[type=\"application/ld+json\"]"
 	scriptSelectorThird := "script[type=\"application/ld+json\"]"
@@ -196,26 +195,22 @@ func (t*Template) EuroNewsGetPublishedAtTimeStampStruct(document *goquery.Docume
 			var firstTypeMetaData EuronewsMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert ApNewsMetaData unmarshalError %v",unmarshalErr) 
+				log.Printf("convert ApNewsMetaData unmarshalError %v", unmarshalErr)
 				return
 
 			}
-			for _,currentGraph := range firstTypeMetaData.Graph{
+			for _, currentGraph := range firstTypeMetaData.Graph {
 
-            publishedAt =  ConvertStringTimeToTimestampForEuroNews(currentGraph.DatePublished)
-            if publishedAt == 0 {
-               publishedAt = EuronewsConvertSecond(currentGraph.DatePublished)
+				publishedAt = ConvertStringTimeToTimestampForEuroNews(currentGraph.DatePublished)
+				if publishedAt == 0 {
+					publishedAt = EuronewsConvertSecond(currentGraph.DatePublished)
 
-            }
-            if publishedAt != 0 {
-               break
-            }
-         }
+				}
+				if publishedAt != 0 {
+					break
+				}
+			}
 
-
-			// var jsonMap map[string]interface{}
-
-			// logger.Info("script content %s  author length %d",scriptContent, len(currentDWMetadata.Author))
 		})
 		if publishedAt != 0 {
 			break
@@ -224,7 +219,7 @@ func (t*Template) EuroNewsGetPublishedAtTimeStampStruct(document *goquery.Docume
 	return publishedAt
 }
 
-func (t*Template) EuroNewsGetAuthorStruct(document *goquery.Document) string {
+func (t *Template) EuroNewsGetAuthorStruct(document *goquery.Document) string {
 	author := ""
 	scriptSelectorFirst := "head > script[type=\"application/ld+json\"]"
 	scriptSelectorSecond := "body > script[type=\"application/ld+json\"]"
@@ -245,18 +240,17 @@ func (t*Template) EuroNewsGetAuthorStruct(document *goquery.Document) string {
 			var firstTypeMetaData EuronewsMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert ApNewsMetaData unmarshalError %v",unmarshalErr) 
+				log.Printf("convert ApNewsMetaData unmarshalError %v", unmarshalErr)
 				return
 
 			}
-			for _,currentGraph := range firstTypeMetaData.Graph{
-            author = currentGraph.Author.Name
-            if author != ""{
-               break
-            }
+			for _, currentGraph := range firstTypeMetaData.Graph {
+				author = currentGraph.Author.Name
+				if author != "" {
+					break
+				}
 
-         }
-			
+			}
 
 			// var jsonMap map[string]interface{}
 
@@ -266,29 +260,26 @@ func (t*Template) EuroNewsGetAuthorStruct(document *goquery.Document) string {
 			break
 		}
 	}
-    logger.Info("author last: %s",author)
+	log.Printf("author last: %s", author)
 	return author
 }
 
-
-
-func ConvertInterfaceToMap(value interface{}) (map[string]interface{}, error) {  
-    if valueMap, ok := value.(map[string]interface{}); ok {  
-        return valueMap, nil  
-    } else {  
-        return nil, fmt.Errorf("value is not a map[string]interface{}")  
-    }  
+func ConvertInterfaceToMap(value interface{}) (map[string]interface{}, error) {
+	if valueMap, ok := value.(map[string]interface{}); ok {
+		return valueMap, nil
+	} else {
+		return nil, fmt.Errorf("value is not a map[string]interface{}")
+	}
 }
 func (t *Template) EuroNewsScrapMetaData(document *goquery.Document) (string, string) {
 
 	author := ""
 	published_at := ""
-	author,published_at = t.AuthorExtractFromScriptMetadata(document)
-   if author == "" {
-      author = t.EuroNewsGetAuthorStruct(document)
-      logger.Info("author********************** [%s]",author)
-   }
-
+	author, published_at = t.AuthorExtractFromScriptMetadata(document)
+	if author == "" {
+		author = t.EuroNewsGetAuthorStruct(document)
+		log.Printf("author********************** [%s]", author)
+	}
 
 	return author, published_at
 }

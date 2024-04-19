@@ -8,7 +8,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/mitchellh/mapstructure"
-	"recommend.common/logger"
 )
 
 type Image struct {
@@ -69,7 +68,7 @@ func (t *Template) CommonGetPublishedAtTimestamp(document *goquery.Document) int
 }
 
 func ConvertStringTimeToTimestampForEuroNews(currentTime string) int64 {
-  
+
 	layout := time.DateTime
 
 	t, err := time.Parse(layout, currentTime)
@@ -79,7 +78,6 @@ func ConvertStringTimeToTimestampForEuroNews(currentTime string) int64 {
 	}
 	return t.Unix() - 3600
 }
-
 
 func ConvertStringTimeToTimestamp(currentTime string) int64 {
 	layout := time.RFC3339Nano
@@ -112,8 +110,7 @@ func (t *Template) CommonGetPublishedAtTimestampSingleJson(document *goquery.Doc
 	scriptSelectorList := make([]string, 100)
 	scriptSelectorList = append(scriptSelectorList, scriptSelectorFirst)
 	scriptSelectorList = append(scriptSelectorList, scriptSelectorSecond)
-	scriptSelectorList = append(scriptSelectorList,scriptSelectorThird)
-
+	scriptSelectorList = append(scriptSelectorList, scriptSelectorThird)
 
 	for _, scriptSelector := range scriptSelectorList {
 
@@ -126,7 +123,7 @@ func (t *Template) CommonGetPublishedAtTimestampSingleJson(document *goquery.Doc
 			var jsonMap map[string]interface{}
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &jsonMap)
 			if unmarshalErr != nil {
-				logger.Error("unmarshal error")
+				log.Printf("unmarshal error")
 				return
 			}
 			currentPublishedAt, ok := jsonMap["datePublished"]
@@ -165,7 +162,7 @@ func (t *Template) CommonGetPublishedAtTimestampMultipleJson(document *goquery.D
 	scriptSelectorList := make([]string, 100)
 	scriptSelectorList = append(scriptSelectorList, scriptSelectorFirst)
 	scriptSelectorList = append(scriptSelectorList, scriptSelectorSecond)
-	scriptSelectorList = append(scriptSelectorList,scriptSelectorThird)
+	scriptSelectorList = append(scriptSelectorList, scriptSelectorThird)
 
 	for _, scriptSelector := range scriptSelectorList {
 		document.Find(scriptSelector).Each(func(i int, s *goquery.Selection) {
@@ -240,7 +237,7 @@ func (t *Template) AuthorExtractFromListScriptMetadata(document *goquery.Documen
 					var currentMetadata ArticleScriptMetadata
 					decodeErr := mapstructure.Decode(currentJsonMap, &currentMetadata)
 					if decodeErr != nil {
-						logger.Error("decode content to ArticleScriptMetadata fail")
+						log.Printf("decode content to ArticleScriptMetadata fail")
 						continue
 					}
 					for index, currentAuthor := range currentMetadata.Author {
@@ -289,7 +286,7 @@ func (t *Template) AuthorExtractFromScriptMetadata(document *goquery.Document) (
 			var jsonMap map[string]interface{}
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &jsonMap)
 			if unmarshalErr != nil {
-				logger.Error("unmarshal error")
+				log.Printf("unmarshal error")
 				return
 			}
 			_, ok := jsonMap["author"]
@@ -309,5 +306,3 @@ func (t *Template) AuthorExtractFromScriptMetadata(document *goquery.Document) (
 
 	return author, published_at
 }
-
-

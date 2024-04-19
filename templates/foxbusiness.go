@@ -2,11 +2,11 @@ package templates
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type FoxbusinessMetadata struct {
@@ -137,7 +137,7 @@ func (t *Template) FoxbusinessScrapMetaData(document *goquery.Document) (string,
 			var firstTypeMetaData FoxbusinessMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert foxbusiness unmarshalError %v", unmarshalErr)
+				log.Printf("convert foxbusiness unmarshalError %v", unmarshalErr)
 			} else {
 				author = firstTypeMetaData.Author.Name
 			}
@@ -147,7 +147,7 @@ func (t *Template) FoxbusinessScrapMetaData(document *goquery.Document) (string,
 			var secondTypeMetaData FoxbusinessMetadataSecond
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert foxbusiness unmarshalError %v", unmarshalErr)
+				log.Printf("convert foxbusiness unmarshalError %v", unmarshalErr)
 				return
 			}
 			for _, currentAuthor := range secondTypeMetaData.Author {
@@ -164,7 +164,7 @@ func (t *Template) FoxbusinessScrapMetaData(document *goquery.Document) (string,
 			break
 		}
 	}
-	logger.Info("author last: %s", author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
@@ -191,24 +191,24 @@ func (t *Template) FoxbusinessPublishedAtTimeFromScriptMetadata(document *goquer
 			var firstTypeMetaData FoxbusinessMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert foxbusiness unmarshalError %v", unmarshalErr)
+				log.Printf("convert foxbusiness unmarshalError %v", unmarshalErr)
 
 			} else {
 				publishedAt = firstTypeMetaData.DatePublished.Unix()
 			}
 			//publishedAt = firstTypeMetaData[0].DatePublished.Unix()
-			if publishedAt != 0{
+			if publishedAt != 0 {
 				return
 			}
-			var secondTypeMetaData FoxbusinessMetadataSecond;
+			var secondTypeMetaData FoxbusinessMetadataSecond
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert foxbusiness unmarshalError %v",unmarshalErr) 
+				log.Printf("convert foxbusiness unmarshalError %v", unmarshalErr)
 				return
 			}
-			parsedPublishedAt,parseErr := ConvertToTimestampFoxbusiness(secondTypeMetaData.DatePublished)
+			parsedPublishedAt, parseErr := ConvertToTimestampFoxbusiness(secondTypeMetaData.DatePublished)
 			if parseErr != nil {
-				logger.Error("convert foxbusiness error %v",parseErr)
+				log.Printf("convert foxbusiness error %v", parseErr)
 				return
 			}
 			publishedAt = parsedPublishedAt
@@ -218,11 +218,10 @@ func (t *Template) FoxbusinessPublishedAtTimeFromScriptMetadata(document *goquer
 	return publishedAt
 }
 
-
 func ConvertToTimestampFoxbusiness(timeStr string) (int64, error) {
 	t, err := time.Parse(time.RFC3339, timeStr)
 	if err != nil {
-		return 0, err 
+		return 0, err
 	}
 
 	return t.Unix(), nil

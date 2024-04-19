@@ -3,10 +3,11 @@ package templates
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
+
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type NprMetadata struct {
@@ -46,7 +47,6 @@ type NprMetadata struct {
 	Context string `json:"@context"`
 }
 
-
 func (t *Template) NprScrapMetaData(document *goquery.Document) (string, string) {
 
 	author := ""
@@ -67,13 +67,13 @@ func (t *Template) NprScrapMetaData(document *goquery.Document) (string, string)
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData NprMetadata;
+			var firstTypeMetaData NprMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 			}
-			for _,currentName := range firstTypeMetaData.Author.Name {
+			for _, currentName := range firstTypeMetaData.Author.Name {
 				if len(author) != 0 {
 					author = " & "
 				}
@@ -84,11 +84,11 @@ func (t *Template) NprScrapMetaData(document *goquery.Document) (string, string)
 			break
 		}
 	}
-    logger.Info("author last: %s",author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
-func (t* Template) NprPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
+func (t *Template) NprPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
 
 	var publishedAt int64 = 0
 
@@ -108,10 +108,10 @@ func (t* Template) NprPublishedAtTimeFromScriptMetadata(document *goquery.Docume
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData NprMetadata;
+			var firstTypeMetaData NprMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
@@ -122,4 +122,3 @@ func (t* Template) NprPublishedAtTimeFromScriptMetadata(document *goquery.Docume
 	}
 	return publishedAt
 }
-

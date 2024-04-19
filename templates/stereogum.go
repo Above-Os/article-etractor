@@ -2,11 +2,11 @@ package templates
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type StereogumMetadata []struct {
@@ -107,7 +107,7 @@ func (t *Template) StereogumScrapMetaData(document *goquery.Document) (string, s
 			var firstTypeMetaData StereogumMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 			}
 			for _, currentMetadata := range firstTypeMetaData {
@@ -121,7 +121,7 @@ func (t *Template) StereogumScrapMetaData(document *goquery.Document) (string, s
 			break
 		}
 	}
-	logger.Info("author last: %s", author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
@@ -148,7 +148,7 @@ func (t *Template) StereogumPublishedAtTimeFromScriptMetadata(document *goquery.
 			var firstTypeMetaData StereogumMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}

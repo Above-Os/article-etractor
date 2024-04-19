@@ -2,11 +2,11 @@ package templates
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 func (t *Template) NBCSportsScrapContent(document *goquery.Document) string {
@@ -70,7 +70,6 @@ type NBCSportsMetaData struct {
 	Headline string `json:"headline"`
 }
 
-
 func (t *Template) NBCSPortScrapMetaData(document *goquery.Document) (string, string) {
 
 	author := ""
@@ -94,15 +93,15 @@ func (t *Template) NBCSPortScrapMetaData(document *goquery.Document) (string, st
 			var firstTypeMetaData NBCSportsMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 			}
-		
+
 			for _, currentAuthor := range firstTypeMetaData.Author {
 				if len(currentAuthor.Name) != 0 {
 					if len(author) != 0 {
 						author = author + " & " + currentAuthor.Name
-					}else{
+					} else {
 						author = currentAuthor.Name
 					}
 
@@ -113,7 +112,7 @@ func (t *Template) NBCSPortScrapMetaData(document *goquery.Document) (string, st
 			break
 		}
 	}
-	logger.Info("author last: %s", author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
@@ -140,7 +139,7 @@ func (t *Template) NBCSportsPublishedAtTimeFromScriptMetadata(document *goquery.
 			var firstTypeMetaData NBCSportsMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
@@ -150,4 +149,3 @@ func (t *Template) NBCSportsPublishedAtTimeFromScriptMetadata(document *goquery.
 	}
 	return publishedAt
 }
-

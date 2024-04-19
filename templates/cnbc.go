@@ -3,11 +3,11 @@ package templates
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type CnbcMetaData struct {
@@ -132,7 +132,7 @@ func (t *Template) CnbcScrapMetaData(document *goquery.Document) (string, string
 			var firstTypeMetaData CnbcMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 
 			} else {
 				for _, currentAuthor := range firstTypeMetaData.Author {
@@ -153,7 +153,7 @@ func (t *Template) CnbcScrapMetaData(document *goquery.Document) (string, string
 			var secondTypeMetaData CnbcMetaDataSecond
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 
 			} else {
 				for _, currentAuthor := range secondTypeMetaData.Author {
@@ -172,7 +172,7 @@ func (t *Template) CnbcScrapMetaData(document *goquery.Document) (string, string
 			break
 		}
 	}
-	logger.Info("author last: %s", author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
@@ -198,7 +198,7 @@ func (t *Template) CnbcPublishedAtTimeFromScriptMetadata(document *goquery.Docum
 			var firstTypeMetaData CnbcMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert CnbcPublishedAtTimeFromScriptMetadata unmarshalError %v", unmarshalErr)
+				log.Printf("convert CnbcPublishedAtTimeFromScriptMetadata unmarshalError %v", unmarshalErr)
 				return
 
 			}
@@ -206,7 +206,7 @@ func (t *Template) CnbcPublishedAtTimeFromScriptMetadata(document *goquery.Docum
 			fmt.Println(firstTypeMetaData.DatePublished)
 			convertPublishedAt, parsePublishedAtErr := parseCnbcTimestamp(firstTypeMetaData.DatePublished)
 			if parsePublishedAtErr != nil {
-				logger.Info("convert CnbcTimestamp str format to timestamp %v", unmarshalErr)
+				log.Printf("convert CnbcTimestamp str format to timestamp %v", unmarshalErr)
 
 			} else {
 				publishedAt = convertPublishedAt
@@ -219,12 +219,12 @@ func (t *Template) CnbcPublishedAtTimeFromScriptMetadata(document *goquery.Docum
 			var secondTypeMetaData CnbcMetaDataSecond
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 
 			} else {
 				convertPublishedAt, parsePublishedAtErr := parseCnbcTimestamp(secondTypeMetaData.DatePublished)
 				if parsePublishedAtErr != nil {
-					logger.Info("convert CnbcTimestamp str format to timestamp %v", unmarshalErr)
+					log.Printf("convert CnbcTimestamp str format to timestamp %v", unmarshalErr)
 
 				} else {
 					publishedAt = convertPublishedAt
@@ -234,7 +234,7 @@ func (t *Template) CnbcPublishedAtTimeFromScriptMetadata(document *goquery.Docum
 				}
 				convertPublishedAt, parsePublishedAtErr = parseCnbcTimestampSecond(secondTypeMetaData.DatePublished)
 				if parsePublishedAtErr != nil {
-					logger.Info("convert CnbcTimestamp str format to timestamp %v", unmarshalErr)
+					log.Printf("convert CnbcTimestamp str format to timestamp %v", unmarshalErr)
 
 				} else {
 					publishedAt = convertPublishedAt

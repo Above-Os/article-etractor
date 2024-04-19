@@ -2,11 +2,11 @@ package templates
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"recommend.common/logger"
 )
 
 type BusinessliveMetadata struct {
@@ -63,7 +63,7 @@ func (t *Template) BusinessliveScrapMetaData(document *goquery.Document) (string
 			var firstTypeMetaData BusinessliveMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 			}
 			author = firstTypeMetaData.Author.Name
@@ -72,7 +72,7 @@ func (t *Template) BusinessliveScrapMetaData(document *goquery.Document) (string
 			break
 		}
 	}
-	logger.Info("author last: %s", author)
+	log.Printf("author last: %s", author)
 	return author, published_at
 }
 
@@ -99,7 +99,7 @@ func (t *Template) BusinesslivePublishedAtTimeFromScriptMetadata(document *goque
 			var firstTypeMetaData BusinessliveMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				log.Printf("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
