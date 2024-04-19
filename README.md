@@ -28,7 +28,7 @@ To get the readable content from an URL, you can use `processor.ArticleReadabili
 |--------------------------------------|------------------------------------------------------------|
 | rawContent                           | raw content of the page                                    |
 | entryUrl                             | url of the entry                                           |
-| feedUrl                              | feed url， it can be "" if don’t know                     |
+| feedUrl                              | feed url， it can be "" if don’t have the value            |
 | rules                                | custom parsing rules                                       |
 | isrecommend                          | reserved parameters ,not used yet                          |
 
