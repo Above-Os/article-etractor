@@ -16,7 +16,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func ArticleReadabilityExtractor(rawContent, entryUrl, feedUrl, rules string, isrecommend bool) (string, string, *time.Time, *time.Time, string, string, string, string, int64) {
+func ArticleReadabilityExtractor(rawContent, entryUrl, feedUrl, rules string, isrecommend bool) (string, string, *time.Time, string, string, string, string, int64) {
 	var publishedAtTimeStamp int64 = 0
 	templateRawData := strings.NewReader(rawContent)
 	doc, _ := goquery.NewDocumentFromReader(templateRawData)
@@ -26,12 +26,11 @@ func ArticleReadabilityExtractor(rawContent, entryUrl, feedUrl, rules string, is
 
 	if err != nil {
 		log.Printf(`article extractor error %q`, err)
-		return "", "", nil, nil, "", "", "", "", publishedAtTimeStamp
+		return "", "", nil, "", "", "", "", publishedAtTimeStamp
 	}
 
 	var content string
 	var author string
-	var templateTime *time.Time
 	var ruleErr error
 
 	funcs := reflect.ValueOf(&templates.Template{})
@@ -41,13 +40,13 @@ func ArticleReadabilityExtractor(rawContent, entryUrl, feedUrl, rules string, is
 		f := funcs.MethodByName(metadataRule)
 		res := f.Call([]reflect.Value{reflect.ValueOf(doc)})
 		author = res[0].String()
-		published_at := res[1].String()
+		/*published_at := res[1].String()
 		if published_at != "" {
 			ptime, parseErr := readability.ParseTime(published_at)
 			if parseErr != nil {
 				templateTime = &ptime
 			}
-		}
+		}*/
 	}
 
 	_, publishedAtRule := getPredefinedPublishedAtTimestampTemplateRules(entryUrl)
@@ -77,7 +76,7 @@ func ArticleReadabilityExtractor(rawContent, entryUrl, feedUrl, rules string, is
 			content, ruleErr = templates.ScrapContentUseRules(doc, rules)
 			if ruleErr != nil {
 				log.Printf(`get document by rule error rules:%s,domain:%s,%q`, rules, rulesDomain, err)
-				return "", "", nil, nil, "", "", "", "", publishedAtTimeStamp
+				return "", "", nil, "", "", "", "", publishedAtTimeStamp
 			}
 		}
 	}
@@ -107,12 +106,8 @@ func ArticleReadabilityExtractor(rawContent, entryUrl, feedUrl, rules string, is
 		}
 	}
 	pureContent := getPureContent(article.Content)
-	/*
-		if author == ""{
-			author = GetDomainName(feedUrl)
-		}*/
 
-	return article.Content, pureContent, templateTime, article.PublishedDate, article.Image, article.Title, author, article.Byline, publishedAtTimeStamp
+	return article.Content, pureContent, article.PublishedDate, article.Image, article.Title, author, article.Byline, publishedAtTimeStamp
 }
 
 func getPureContent(content string) string {
