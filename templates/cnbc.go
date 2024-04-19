@@ -2,91 +2,121 @@ package templates
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"recommend.common/logger"
 )
 
-func (t *Template) CnbcScrapMetaData(document *goquery.Document) (string, string) {
-	author := ""
-	published_at := ""
-	author, published_at = t.AuthorExtractFromScriptMetadata(document)
+type CnbcMetaData struct {
+	Context     string `json:"@context"`
+	Type        string `json:"@type"`
+	Description string `json:"description"`
+	Speakable   struct {
+		Type        string   `json:"@type"`
+		Xpath       []string `json:"xpath"`
+		CSSSelector []string `json:"cssSelector"`
+	} `json:"speakable"`
+	MainEntityOfPage string `json:"mainEntityOfPage"`
+	URL              string `json:"url"`
+	Headline         string `json:"headline"`
+	DateCreated      string `json:"dateCreated"`
+	DatePublished    string `json:"datePublished"`
+	DateModified     string `json:"dateModified"`
+	Author           []struct {
+		Type string `json:"@type"`
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"author"`
+	Publisher struct {
+		Type         string `json:"@type"`
+		Name         string `json:"name"`
+		URL          string `json:"url"`
+		FoundingDate string `json:"foundingDate"`
+		Logo         struct {
+			Type   string `json:"@type"`
+			URL    string `json:"url"`
+			Width  int    `json:"width"`
+			Height int    `json:"height"`
+		} `json:"logo"`
+		SameAs []string `json:"sameAs"`
+	} `json:"publisher"`
+	ArticleSection string   `json:"articleSection"`
+	Keywords       []string `json:"keywords"`
+	Image          struct {
+		Type   string `json:"@type"`
+		URL    string `json:"url"`
+		Width  int    `json:"width"`
+		Height int    `json:"height"`
+	} `json:"image"`
+	ThumbnailURL string `json:"thumbnailUrl"`
+}
 
-	if author == "" {
-		document.Find("a.Author-authorName").Each(func(i int, s *goquery.Selection) {
-			author = strings.TrimSpace(s.Text())
-
-		})
-	}
-
-	return author, published_at
+type CnbcMetaDataSecond struct {
+	Context     string `json:"@context"`
+	Type        string `json:"@type"`
+	Description string `json:"description"`
+	Speakable   struct {
+		Type        string   `json:"@type"`
+		Xpath       []string `json:"xpath"`
+		CSSSelector []string `json:"cssSelector"`
+	} `json:"speakable"`
+	MainEntityOfPage string   `json:"mainEntityOfPage"`
+	URL              string   `json:"url"`
+	Headline         string   `json:"headline"`
+	DateCreated      string   `json:"dateCreated"`
+	DatePublished    string   `json:"datePublished"`
+	DateModified     string   `json:"dateModified"`
+	Author           []string `json:"author"`
+	Publisher        struct {
+		Type         string `json:"@type"`
+		Name         string `json:"name"`
+		URL          string `json:"url"`
+		FoundingDate string `json:"foundingDate"`
+		Logo         struct {
+			Type   string `json:"@type"`
+			URL    string `json:"url"`
+			Width  int    `json:"width"`
+			Height int    `json:"height"`
+		} `json:"logo"`
+		SameAs []string `json:"sameAs"`
+	} `json:"publisher"`
+	ArticleSection string   `json:"articleSection"`
+	Keywords       []string `json:"keywords"`
+	Image          struct {
+		Type   string `json:"@type"`
+		URL    string `json:"url"`
+		Width  int    `json:"width"`
+		Height int    `json:"height"`
+	} `json:"image"`
+	ThumbnailURL string `json:"thumbnailUrl"`
 }
 
 func (t *Template) CNBCScrapContent(document *goquery.Document) string {
 	contents := ""
-	document.Find("div#RegularArticle-RelatedQuotes,div[data-test=PlayButton],div.InlineVideo-videoFooter,div.InlineImage-imageEmbedCaption,div.InlineImage-imageEmbedCredit").Each(func(i int, s *goquery.Selection) {
+	document.Find("div#RegularArticle-RelatedQuotes,div[data-test=PlayButton],div.InlineVideo-videoFooter,div.InlineImage-imageEmbedCaption,div.InlineImage-imageEmbedCredit,div.RelatedContent-relatedContent").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
-	/*currentCoverImageUrl := t.CnbcConverImageUrlExtractFromScriptMetadata(document)
-	if currentCoverImageUrl != "" {
-		currentImageTag := fmt.Sprintf("<figure><img src=\"%s\"/></figure>",currentCoverImageUrl)
-		contents = contents + currentImageTag
-	}*/
-	// log.Printf("current image url %s",currentCoverImageUrl)
-	document.Find("div.RenderKeyPoints-list,div.ArticleBody-articleBody").Each(func(i int, s *goquery.Selection) {
+
+	document.Find("div.InlineImage-imageContainer,div.RenderKeyPoints-list,div.ArticleBody-articleBody").Each(func(i int, s *goquery.Selection) {
 		var content string
 		content, _ = goquery.OuterHtml(s)
 		contents += content
 	})
+
 	return contents
 }
 
-type CNBCCoverImage struct {
-	ThumbnailCovertImageUrl string `json:"thumbnailUrl"`
-}
+func (t *Template) CnbcScrapMetaData(document *goquery.Document) (string, string) {
 
-func (t *Template) CnbcConverImageUrlExtractFromScriptMetadata(document *goquery.Document) string {
-	url := ""
-	scriptSelectorFirst := "head > script[type=\"application/ld+json\"]"
-	scriptSelectorSecond := "body > script[type=\"application/ld+json\"]"
-	// #caas-art-51cf82b6-f0e5-3999-a910-ce4fb658efb4 > article > script:nth-child(1)
-	scriptSelectorList := make([]string, 100)
-	scriptSelectorList = append(scriptSelectorList, scriptSelectorFirst)
-	scriptSelectorList = append(scriptSelectorList, scriptSelectorSecond)
-
-	for _, scriptSelector := range scriptSelectorList {
-
-		document.Find(scriptSelector).Each(func(i int, s *goquery.Selection) {
-			if url != "" {
-				return
-			}
-			scriptContent := strings.TrimSpace(s.Text())
-
-			var currentCNBCCovertImage CNBCCoverImage
-			unmarshalErr := json.Unmarshal([]byte(scriptContent), &currentCNBCCovertImage)
-			if unmarshalErr != nil {
-				log.Println("unmarshal error")
-				return
-			}
-
-			url = currentCNBCCovertImage.ThumbnailCovertImageUrl
-			// logger.Info("script content %s  author length %d",scriptContent, len(currentDWMetadata.Author))
-		})
-		if url != "" {
-			break
-		}
-	}
-
-	return url
-}
-
-func (t *Template) CnbcWorldGetPublishedAtTimestampSingleJson(document *goquery.Document) int64 {
-
-	var publishedAtTimestamp int64 = 0
+	author := ""
+	published_at := ""
 	scriptSelectorFirst := "head > script[type=\"application/ld+json\"]"
 	scriptSelectorSecond := "body > script[type=\"application/ld+json\"]"
 	scriptSelectorThird := "script[type=\"application/ld+json\"]"
+
 	scriptSelectorList := make([]string, 100)
 	scriptSelectorList = append(scriptSelectorList, scriptSelectorFirst)
 	scriptSelectorList = append(scriptSelectorList, scriptSelectorSecond)
@@ -95,35 +125,153 @@ func (t *Template) CnbcWorldGetPublishedAtTimestampSingleJson(document *goquery.
 	for _, scriptSelector := range scriptSelectorList {
 
 		document.Find(scriptSelector).Each(func(i int, s *goquery.Selection) {
-			if publishedAtTimestamp != 0 {
+			if author != "" {
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-
-			var jsonMap map[string]interface{}
-			unmarshalErr := json.Unmarshal([]byte(scriptContent), &jsonMap)
+			var firstTypeMetaData CnbcMetaData
+			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				log.Printf("unmarshal error")
+				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+
+			} else {
+				for _, currentAuthor := range firstTypeMetaData.Author {
+					if len(currentAuthor.Name) != 0 {
+						if len(author) != 0 {
+							author = author + " & " + currentAuthor.Name
+						} else {
+							author = currentAuthor.Name
+						}
+					}
+				}
+			}
+
+			if len(author) != 0 {
 				return
 			}
-			currentPublishedAt, ok := jsonMap["datePublished"]
-			if !ok {
 
-				return
+			var secondTypeMetaData CnbcMetaDataSecond
+			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
+			if unmarshalErr != nil {
+				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+
+			} else {
+				for _, currentAuthor := range secondTypeMetaData.Author {
+					if len(currentAuthor) != 0 {
+						if len(author) != 0 {
+							author = author + " & " + currentAuthor
+						} else {
+							author = currentAuthor
+						}
+					}
+				}
 			}
-			currentPublishedAtStr := currentPublishedAt.(string)
-			log.Printf("currentPublishedAtStr %s", currentPublishedAtStr[0:len(currentPublishedAtStr)-5]+"Z")
-			publishedAtTimestamp = ConvertStringTimeToTimestamp(currentPublishedAtStr[0:len(currentPublishedAtStr)-5] + "Z")
 
-			// var jsonMap map[string]interface{}
-
-			// logger.Info("script content %s  author length %d",scriptContent, len(currentDWMetadata.Author))
 		})
-		if publishedAtTimestamp != 0 {
+		if author != "" {
 			break
 		}
 	}
+	logger.Info("author last: %s", author)
+	return author, published_at
+}
 
-	return publishedAtTimestamp
+func (t *Template) CnbcPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
 
+	var publishedAt int64 = 0
+
+	scriptSelectorFirst := "head > script[type=\"application/ld+json\"]"
+	scriptSelectorSecond := "body > script[type=\"application/ld+json\"]"
+	scriptSelectorThird := "script[type=\"application/ld+json\"]"
+
+	scriptSelectorList := make([]string, 100)
+	scriptSelectorList = append(scriptSelectorList, scriptSelectorFirst)
+	scriptSelectorList = append(scriptSelectorList, scriptSelectorSecond)
+	scriptSelectorList = append(scriptSelectorList, scriptSelectorThird)
+
+	for _, scriptSelector := range scriptSelectorList {
+		document.Find(scriptSelector).Each(func(i int, s *goquery.Selection) {
+			if publishedAt != 0 {
+				return
+			}
+			scriptContent := strings.TrimSpace(s.Text())
+			var firstTypeMetaData CnbcMetaData
+			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
+			if unmarshalErr != nil {
+				logger.Info("convert CnbcPublishedAtTimeFromScriptMetadata unmarshalError %v", unmarshalErr)
+				return
+
+			}
+			//publishedAt = firstTypeMetaData[0].DatePublished.Unix()
+			fmt.Println(firstTypeMetaData.DatePublished)
+			convertPublishedAt, parsePublishedAtErr := parseCnbcTimestamp(firstTypeMetaData.DatePublished)
+			if parsePublishedAtErr != nil {
+				logger.Info("convert CnbcTimestamp str format to timestamp %v", unmarshalErr)
+
+			} else {
+				publishedAt = convertPublishedAt
+			}
+
+			if publishedAt != 0 {
+				return
+			}
+
+			var secondTypeMetaData CnbcMetaDataSecond
+			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
+			if unmarshalErr != nil {
+				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+
+			} else {
+				convertPublishedAt, parsePublishedAtErr := parseCnbcTimestamp(secondTypeMetaData.DatePublished)
+				if parsePublishedAtErr != nil {
+					logger.Info("convert CnbcTimestamp str format to timestamp %v", unmarshalErr)
+
+				} else {
+					publishedAt = convertPublishedAt
+				}
+				if publishedAt != 0 {
+					return
+				}
+				convertPublishedAt, parsePublishedAtErr = parseCnbcTimestampSecond(secondTypeMetaData.DatePublished)
+				if parsePublishedAtErr != nil {
+					logger.Info("convert CnbcTimestamp str format to timestamp %v", unmarshalErr)
+
+				} else {
+					publishedAt = convertPublishedAt
+				}
+
+			}
+		})
+
+	}
+	return publishedAt
+}
+
+func parseCnbcTimestamp(timeStr string) (int64, error) {
+	// Define the custom layout matching the input string format.
+	// Note that "2006-01-02T15:04:05-0700" is the reference time format needed by Go.
+	const layout = "2006-01-02T15:04:05-0700"
+
+	// Parse the time string using the custom layout
+	t, err := time.Parse(layout, timeStr)
+	if err != nil {
+		return 0, err
+	}
+
+	// Return the Unix timestamp (seconds since January 1, 1970 UTC)
+	return t.Unix(), nil
+}
+
+func parseCnbcTimestampSecond(timeStr string) (int64, error) {
+	// Adjusted layout for parsing the time string without a colon in the timezone offset
+	const layout = "2006-01-02T15:04:05Z0700"
+
+	// Parse the time string using the adjusted layout
+	t, err := time.Parse(layout, timeStr)
+	if err != nil {
+		return 0, err
+	}
+
+	// Return the Unix timestamp (seconds since January 1, 1970 UTC)
+	return t.Unix(), nil
 }

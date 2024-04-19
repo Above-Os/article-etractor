@@ -2,6 +2,7 @@ package templates
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 	"recommend.common/logger"
 )
 
-type SkyNewsMetaData struct {
+type SkySportsMetaData struct {
 	Context             string `json:"@context"`
 	Type                string `json:"@type"`
 	AlternativeHeadline string `json:"alternativeHeadline"`
@@ -43,19 +44,13 @@ type SkyNewsMetaData struct {
 		Type string `json:"@type"`
 		Name string `json:"name"`
 	} `json:"author"`
-	DatePublished time.Time `json:"datePublished"`
-	DateModified  time.Time `json:"dateModified"`
-	DateCreated   time.Time `json:"dateCreated"`
-	Image         struct {
-		Type   string `json:"@type"`
-		URL    string `json:"url"`
-		Width  int    `json:"width"`
-		Height int    `json:"height"`
-	} `json:"image"`
-	URL string `json:"url"`
+	DatePublished string `json:"datePublished"`
+	DateModified  string `json:"dateModified"`
+	DateCreated   string `json:"dateCreated"`
+	URL           string `json:"url"`
 }
 
-func (t *Template) SkyNewsScrapMetaData(document *goquery.Document) (string, string) {
+func (t *Template) SkySportsScrapMetaData(document *goquery.Document) (string, string) {
 
 	author := ""
 	published_at := ""
@@ -75,24 +70,24 @@ func (t *Template) SkyNewsScrapMetaData(document *goquery.Document) (string, str
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData SkyNewsMetaData;
+			var firstTypeMetaData SkySportsMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
+				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
-			author=firstTypeMetaData.Author.Name
+			author = firstTypeMetaData.Author.Name
 		})
 		if author != "" {
 			break
 		}
 	}
-    logger.Info("author last: %s",author)
+	logger.Info("author last: %s", author)
 	return author, published_at
 }
 
-func (t* Template) SkyNewsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
+func (t *Template) SkySportsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
 
 	var publishedAt int64 = 0
 
@@ -112,34 +107,47 @@ func (t* Template) SkyNewsPublishedAtTimeFromScriptMetadata(document *goquery.Do
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData SkyNewsMetaData;
+			var firstTypeMetaData SkySportsMetaData
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
+				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
-			publishedAt = firstTypeMetaData.DatePublished.Unix()
+			fmt.Println(firstTypeMetaData.DatePublished)
+			parsedPublisedAt, publishedAtparseErr := parseToTimestampSkysports(firstTypeMetaData.DatePublished)
+			if publishedAtparseErr != nil {
+				logger.Error("parse skysport time error %v", publishedAtparseErr)
+				return
+			}
+			publishedAt = parsedPublisedAt
 		})
 
 	}
 	return publishedAt
 }
 
-func (t *Template) SkyNewsScrapContent(document *goquery.Document) string {
+func parseToTimestampSkysports(timeStr string) (int64, error) {
+	const layout = "2006-01-02T15:04:05-0700"
+	t, err := time.Parse(layout, timeStr)
+	if err != nil {
+		return 0, err
+	}
+	return t.Unix(), nil
+}
+
+func (t *Template) SkySportsScrapContent(document *goquery.Document) string {
+
 	contents := ""
-	document.Find("div.sdc-article-related-stories,div.sdc-site-video,a,span[data-label-text=Advertisement]").Each(func(i int, s *goquery.Selection) {
+	document.Find("div.sdc-article-related-stories,div.sdc-article-factbox,div.sdc-article-strapline,div.site-share-wrapper,div[data-format=floated-mpu]").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
-	document.Find("p").Each(func(i int, s *goquery.Selection) {
-		if strings.Contains(s.Text(), "Read more:") {
-			RemoveNodes(s)
-		}
-	})
-	document.Find("figure.sdc-article-image__figure,div.sdc-article-body").Each(func(i int, s *goquery.Selection) {
+
+	document.Find("div.sdc-article-image,div[data-type=article]").Each(func(i int, s *goquery.Selection) {
 		var content string
 		content, _ = goquery.OuterHtml(s)
 		contents += content
 	})
 	return contents
+
 }

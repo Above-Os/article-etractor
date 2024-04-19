@@ -9,53 +9,38 @@ import (
 	"recommend.common/logger"
 )
 
-type SkyNewsMetaData struct {
-	Context             string `json:"@context"`
-	Type                string `json:"@type"`
-	AlternativeHeadline string `json:"alternativeHeadline"`
-	ArticleBody         string `json:"articleBody"`
-	MainEntityOfPage    struct {
-		Type string `json:"@type"`
-		URL  string `json:"url"`
-	} `json:"mainEntityOfPage"`
-	WordCount  string `json:"wordCount"`
-	InLanguage string `json:"inLanguage"`
-	Genre      string `json:"genre"`
-	Publisher  struct {
-		Type string `json:"@type"`
-		ID   string `json:"@id"`
-		Name string `json:"name"`
-		Logo struct {
-			Type   string `json:"@type"`
-			ID     string `json:"@id"`
-			URL    string `json:"url"`
-			Width  string `json:"width"`
-			Height string `json:"height"`
-		} `json:"logo"`
-	} `json:"publisher"`
-	Headline        string `json:"headline"`
-	Description     string `json:"description"`
-	Dateline        string `json:"dateline"`
-	CopyrightHolder struct {
-		ID string `json:"@id"`
-	} `json:"copyrightHolder"`
-	Author struct {
+type BusinessliveMetadata struct {
+	Context          string    `json:"@context"`
+	Type             string    `json:"@type"`
+	MainEntityOfPage string    `json:"mainEntityOfPage"`
+	Headline         string    `json:"headline"`
+	Description      string    `json:"description"`
+	DatePublished    time.Time `json:"datePublished"`
+	DateModified     string    `json:"dateModified"`
+	Author           struct {
 		Type string `json:"@type"`
 		Name string `json:"name"`
 	} `json:"author"`
-	DatePublished time.Time `json:"datePublished"`
-	DateModified  time.Time `json:"dateModified"`
-	DateCreated   time.Time `json:"dateCreated"`
-	Image         struct {
+	Image []struct {
 		Type   string `json:"@type"`
 		URL    string `json:"url"`
-		Width  int    `json:"width"`
-		Height int    `json:"height"`
+		Author string `json:"author"`
+		Height string `json:"height"`
+		Width  string `json:"width"`
 	} `json:"image"`
-	URL string `json:"url"`
+	Publisher struct {
+		Type string `json:"@type"`
+		Name string `json:"name"`
+		URL  string `json:"url"`
+		Logo struct {
+			Type string `json:"@type"`
+			URL  string `json:"url"`
+		} `json:"logo"`
+		SameAs []string `json:"sameAs"`
+	} `json:"publisher"`
 }
 
-func (t *Template) SkyNewsScrapMetaData(document *goquery.Document) (string, string) {
+func (t *Template) BusinessliveScrapMetaData(document *goquery.Document) (string, string) {
 
 	author := ""
 	published_at := ""
@@ -75,24 +60,23 @@ func (t *Template) SkyNewsScrapMetaData(document *goquery.Document) (string, str
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData SkyNewsMetaData;
+			var firstTypeMetaData BusinessliveMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
+				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
-
 			}
-			author=firstTypeMetaData.Author.Name
+			author = firstTypeMetaData.Author.Name
 		})
 		if author != "" {
 			break
 		}
 	}
-    logger.Info("author last: %s",author)
+	logger.Info("author last: %s", author)
 	return author, published_at
 }
 
-func (t* Template) SkyNewsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
+func (t *Template) BusinesslivePublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
 
 	var publishedAt int64 = 0
 
@@ -112,34 +96,33 @@ func (t* Template) SkyNewsPublishedAtTimeFromScriptMetadata(document *goquery.Do
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData SkyNewsMetaData;
+			var firstTypeMetaData BusinessliveMetadata
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
+				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
 				return
 
 			}
 			publishedAt = firstTypeMetaData.DatePublished.Unix()
+			//publishedAt = firstTypeMetaData[0].DatePublished.Unix()
 		})
 
 	}
 	return publishedAt
 }
 
-func (t *Template) SkyNewsScrapContent(document *goquery.Document) string {
+func (t *Template) BusinessLiveScrapContent(document *goquery.Document) string {
+
 	contents := ""
-	document.Find("div.sdc-article-related-stories,div.sdc-site-video,a,span[data-label-text=Advertisement]").Each(func(i int, s *goquery.Selection) {
+	document.Find("div.article-widget-related_articles").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
-	document.Find("p").Each(func(i int, s *goquery.Selection) {
-		if strings.Contains(s.Text(), "Read more:") {
-			RemoveNodes(s)
-		}
-	})
-	document.Find("figure.sdc-article-image__figure,div.sdc-article-body").Each(func(i int, s *goquery.Selection) {
+
+	document.Find("div.article-widgets").Each(func(i int, s *goquery.Selection) {
 		var content string
 		content, _ = goquery.OuterHtml(s)
 		contents += content
 	})
 	return contents
+
 }

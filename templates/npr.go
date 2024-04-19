@@ -2,60 +2,52 @@ package templates
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
-
 	"github.com/PuerkitoBio/goquery"
 	"recommend.common/logger"
 )
 
-type SkyNewsMetaData struct {
-	Context             string `json:"@context"`
-	Type                string `json:"@type"`
-	AlternativeHeadline string `json:"alternativeHeadline"`
-	ArticleBody         string `json:"articleBody"`
-	MainEntityOfPage    struct {
+type NprMetadata struct {
+	Type      string `json:"@type"`
+	Publisher struct {
 		Type string `json:"@type"`
-		URL  string `json:"url"`
-	} `json:"mainEntityOfPage"`
-	WordCount  string `json:"wordCount"`
-	InLanguage string `json:"inLanguage"`
-	Genre      string `json:"genre"`
-	Publisher  struct {
-		Type string `json:"@type"`
-		ID   string `json:"@id"`
 		Name string `json:"name"`
 		Logo struct {
-			Type   string `json:"@type"`
-			ID     string `json:"@id"`
-			URL    string `json:"url"`
-			Width  string `json:"width"`
-			Height string `json:"height"`
+			Type string `json:"@type"`
+			URL  string `json:"url"`
 		} `json:"logo"`
 	} `json:"publisher"`
-	Headline        string `json:"headline"`
-	Description     string `json:"description"`
-	Dateline        string `json:"dateline"`
-	CopyrightHolder struct {
-		ID string `json:"@id"`
-	} `json:"copyrightHolder"`
-	Author struct {
+	Headline         string `json:"headline"`
+	MainEntityOfPage struct {
 		Type string `json:"@type"`
-		Name string `json:"name"`
-	} `json:"author"`
+		ID   string `json:"@id"`
+	} `json:"mainEntityOfPage"`
 	DatePublished time.Time `json:"datePublished"`
 	DateModified  time.Time `json:"dateModified"`
-	DateCreated   time.Time `json:"dateCreated"`
-	Image         struct {
-		Type   string `json:"@type"`
-		URL    string `json:"url"`
-		Width  int    `json:"width"`
-		Height int    `json:"height"`
+	Author        struct {
+		Type string   `json:"@type"`
+		Name []string `json:"name"`
+	} `json:"author"`
+	Description string `json:"description"`
+	Image       struct {
+		Type string `json:"@type"`
+		URL  string `json:"url"`
 	} `json:"image"`
-	URL string `json:"url"`
+	SubjectOf []struct {
+		Type         string `json:"@type"`
+		Name         string `json:"name"`
+		Description  string `json:"description"`
+		ThumbnailURL string `json:"thumbnailUrl"`
+		UploadDate   string `json:"uploadDate"`
+		EmbedURL     string `json:"embedUrl"`
+	} `json:"subjectOf"`
+	Context string `json:"@context"`
 }
 
-func (t *Template) SkyNewsScrapMetaData(document *goquery.Document) (string, string) {
+
+func (t *Template) NprScrapMetaData(document *goquery.Document) (string, string) {
 
 	author := ""
 	published_at := ""
@@ -75,14 +67,18 @@ func (t *Template) SkyNewsScrapMetaData(document *goquery.Document) (string, str
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData SkyNewsMetaData;
+			var firstTypeMetaData NprMetadata;
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
 				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
 				return
-
 			}
-			author=firstTypeMetaData.Author.Name
+			for _,currentName := range firstTypeMetaData.Author.Name {
+				if len(author) != 0 {
+					author = " & "
+				}
+				author = author + currentName
+			}
 		})
 		if author != "" {
 			break
@@ -92,7 +88,7 @@ func (t *Template) SkyNewsScrapMetaData(document *goquery.Document) (string, str
 	return author, published_at
 }
 
-func (t* Template) SkyNewsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
+func (t* Template) NprPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
 
 	var publishedAt int64 = 0
 
@@ -112,13 +108,14 @@ func (t* Template) SkyNewsPublishedAtTimeFromScriptMetadata(document *goquery.Do
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData SkyNewsMetaData;
+			var firstTypeMetaData NprMetadata;
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
 				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
 				return
 
 			}
+			fmt.Println(firstTypeMetaData.DatePublished)
 			publishedAt = firstTypeMetaData.DatePublished.Unix()
 		})
 
@@ -126,20 +123,3 @@ func (t* Template) SkyNewsPublishedAtTimeFromScriptMetadata(document *goquery.Do
 	return publishedAt
 }
 
-func (t *Template) SkyNewsScrapContent(document *goquery.Document) string {
-	contents := ""
-	document.Find("div.sdc-article-related-stories,div.sdc-site-video,a,span[data-label-text=Advertisement]").Each(func(i int, s *goquery.Selection) {
-		RemoveNodes(s)
-	})
-	document.Find("p").Each(func(i int, s *goquery.Selection) {
-		if strings.Contains(s.Text(), "Read more:") {
-			RemoveNodes(s)
-		}
-	})
-	document.Find("figure.sdc-article-image__figure,div.sdc-article-body").Each(func(i int, s *goquery.Selection) {
-		var content string
-		content, _ = goquery.OuterHtml(s)
-		contents += content
-	})
-	return contents
-}

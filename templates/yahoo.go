@@ -14,7 +14,7 @@ func (t *Template) YahooNewsScrapMetaData(document *goquery.Document) (string, s
 
 	author := ""
 	published_at := ""
-	author ,published_at= t.AuthorExtractFromScriptMetadata(document)
+	author, published_at = t.AuthorExtractFromScriptMetadata(document)
 	if author == "" {
 		document.Find("span.caas-author-byline-collapse").Each(func(i int, s *goquery.Selection) {
 			reg := regexp.MustCompile(`(?:\n\s+)`)
@@ -24,7 +24,7 @@ func (t *Template) YahooNewsScrapMetaData(document *goquery.Document) (string, s
 		document.Find("div.caas-attr-time-style>time").Each(func(i int, s *goquery.Selection) {
 			published_at, _ = s.Attr("datetime")
 		})
-    }
+	}
 
 	return author, published_at
 }
@@ -32,7 +32,8 @@ func (t *Template) YahooNewsScrapMetaData(document *goquery.Document) (string, s
 func (t *Template) YahoocrapContent(document *goquery.Document) string {
 
 	contents := ""
-	document.Find("header.caas-header,div.caas-content-byline-wrapper,button,div.xray-error-wrapper,div.caas-xray-pills-container").Each(func(i int, s *goquery.Selection) {
+	//aside.caas-aside-section https://nypost.com/2024/04/08/business/tsmc-to-boost-computer-chip-production-in-arizona-with-11-6-billion-in-federal-grants-loans/
+	document.Find("header.caas-header,div.caas-content-byline-wrapper,button,div.xray-error-wrapper,div.caas-xray-pills-container,aside.caas-aside-section").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
 	/*currentCoverImageUrl := t.YahooConverImageUrlExtractFromScriptMetadata(document)

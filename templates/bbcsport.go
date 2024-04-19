@@ -2,6 +2,7 @@ package templates
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -9,51 +10,14 @@ import (
 	"recommend.common/logger"
 )
 
-type BBCNewsMetadataSecond struct {
+type BBCSportMetaDataFirst struct {
 	Context   string `json:"@context"`
 	Type      string `json:"@type"`
 	URL       string `json:"url"`
 	Publisher struct {
-		Type                 string `json:"@type"`
-		Name                 string `json:"name"`
-		PublishingPrinciples string `json:"publishingPrinciples"`
-		Logo                 struct {
-			Type string `json:"@type"`
-			URL  string `json:"url"`
-		} `json:"logo"`
-	} `json:"publisher"`
-	DatePublished time.Time `json:"datePublished"`
-	DateModified  time.Time `json:"dateModified"`
-	Description   string    `json:"description"`
-	Headline      string    `json:"headline"`
-	Image         struct {
-		Type   string `json:"@type"`
-		Width  int    `json:"width"`
-		Height int    `json:"height"`
-		URL    string `json:"url"`
-	} `json:"image"`
-	ThumbnailURL     string `json:"thumbnailUrl"`
-	MainEntityOfPage string `json:"mainEntityOfPage"`
-	Author           struct {
-		Type            string `json:"@type"`
-		Name            string `json:"name"`
-		NoBylinesPolicy string `json:"noBylinesPolicy"`
-		Logo            struct {
-			Type string `json:"@type"`
-			URL  string `json:"url"`
-		} `json:"logo"`
-	} `json:"author"`
-}
-
-type BBCNewsMetaData struct {
-	Context   string `json:"@context"`
-	Type      string `json:"@type"`
-	URL       string `json:"url"`
-	Publisher struct {
-		Type                 string `json:"@type"`
-		Name                 string `json:"name"`
-		PublishingPrinciples string `json:"publishingPrinciples"`
-		Logo                 struct {
+		Type string `json:"@type"`
+		Name string `json:"name"`
+		Logo struct {
 			Type string `json:"@type"`
 			URL  string `json:"url"`
 		} `json:"logo"`
@@ -76,45 +40,43 @@ type BBCNewsMetaData struct {
 	} `json:"author"`
 }
 
-func (t *Template) BBCScrapContent(document *goquery.Document) string {
-	contents := ""
-	document.Find("header,div[data-component=topic-list],div[data-component=links-block],span.visually-hidden,h1#main-heading").Each(func(i int, s *goquery.Selection) {
-		RemoveNodes(s)
-	})
-	document.Find("div.description").Each(func(i int, s *goquery.Selection) {
-		var content string
-		content, _ = goquery.OuterHtml(s)
-		contents = content
-	})
-	if contents == "" {
-		document.Find("article,#main-content").Each(func(i int, s *goquery.Selection) {
-			var content string
-			content, _ = goquery.OuterHtml(s)
-			contents = content
-		})
-	}
-	return contents
+type BBCSportMetaDataSecond struct {
+	Context   string `json:"@context"`
+	Type      string `json:"@type"`
+	URL       string `json:"url"`
+	Publisher struct {
+		Type string `json:"@type"`
+		Name string `json:"name"`
+		Logo struct {
+			Type string `json:"@type"`
+			URL  string `json:"url"`
+		} `json:"logo"`
+	} `json:"publisher"`
+	DatePublished time.Time `json:"datePublished"`
+	DateModified  time.Time `json:"dateModified"`
+	Description   string    `json:"description"`
+	Headline      string    `json:"headline"`
+	Image         struct {
+		Type   string `json:"@type"`
+		Width  int    `json:"width"`
+		Height int    `json:"height"`
+		URL    string `json:"url"`
+	} `json:"image"`
+	ThumbnailURL     string `json:"thumbnailUrl"`
+	MainEntityOfPage string `json:"mainEntityOfPage"`
+	Author           struct {
+		Type string `json:"@type"`
+		Name string `json:"name"`
+		Logo struct {
+			Type string `json:"@type"`
+			URL  string `json:"url"`
+		} `json:"logo"`
+	} `json:"author"`
 }
 
-/**
-func (t *Template) BBCScrapMetaData(document *goquery.Document) (string, string) {
 
-	author := ""
-	published_at := ""
-	author, published_at = t.AuthorExtractFromScriptMetadata(document)
-	if author != "" {
-		byPrefix := "By "
-		exist := strings.HasPrefix(author, byPrefix)
-		if exist {
-			author = author[len(byPrefix)-1:]
-		}
-	}
 
-	return author, published_at
-}
-*/
-
-func (t *Template) BBCNewsScrapMetaData(document *goquery.Document) (string, string) {
+func (t *Template) BBCSportsScrapMetaData(document *goquery.Document) (string, string) {
 
 	author := ""
 	published_at := ""
@@ -126,7 +88,6 @@ func (t *Template) BBCNewsScrapMetaData(document *goquery.Document) (string, str
 	scriptSelectorList = append(scriptSelectorList, scriptSelectorFirst)
 	scriptSelectorList = append(scriptSelectorList, scriptSelectorSecond)
 	scriptSelectorList = append(scriptSelectorList, scriptSelectorThird)
-
 	for _, scriptSelector := range scriptSelectorList {
 
 		document.Find(scriptSelector).Each(func(i int, s *goquery.Selection) {
@@ -134,30 +95,30 @@ func (t *Template) BBCNewsScrapMetaData(document *goquery.Document) (string, str
 				return
 			}
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData BBCNewsMetaData
+
+			var firstTypeMetaData BBCSportMetaDataFirst;
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
-
-			} else {
-				for _, currentAuthor := range firstTypeMetaData.Author {
-					if len(currentAuthor.Name) != 0 {
+				logger.Info("convert convert bbc news unmarshalError %v",unmarshalErr) 
+			}else{
+				for _,currentAuthor := range firstTypeMetaData.Author {
+					if len(currentAuthor.Name) != 0{
 						if len(author) != 0 {
 							author = author + " & " + currentAuthor.Name
-						} else {
+						}else{
 							author = currentAuthor.Name
 						}
 					}
-
 				}
 			}
 			if len(author) != 0 {
 				return
 			}
-			var secondTypeMetaData BBCNewsMetadataSecond
+			
+			var secondTypeMetaData BBCSportMetaDataSecond;
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				logger.Error("convert BBCSport unmarshalErr %v \n %s",unmarshalErr,scriptContent)
 				return
 			}
 			author = secondTypeMetaData.Author.Name
@@ -166,10 +127,25 @@ func (t *Template) BBCNewsScrapMetaData(document *goquery.Document) (string, str
 			break
 		}
 	}
+
+	if len(author) == 0 {
+		document.Find("span.qa-contributor-name.gel-long-primer").Each(func(index int, item *goquery.Selection) {
+			text := item.Text()
+			trimmedText := strings.TrimPrefix(text, "By ")
+			if len(trimmedText) != 0 {
+				if len(author) == 0 {
+					author = trimmedText
+				}else{
+					author = author + " & " + trimmedText
+				}
+			}
+		})
+	}
+    logger.Info("author last: %s",author)
 	return author, published_at
 }
 
-func (t *Template) BBCNewsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
+func (t* Template) BBCSportsPublishedAtTimeFromScriptMetadata(document *goquery.Document) int64 {
 
 	var publishedAt int64 = 0
 
@@ -187,24 +163,24 @@ func (t *Template) BBCNewsPublishedAtTimeFromScriptMetadata(document *goquery.Do
 			if publishedAt != 0 {
 				return
 			}
+
 			scriptContent := strings.TrimSpace(s.Text())
-			var firstTypeMetaData BBCNewsMetaData
+			var firstTypeMetaData BBCSportMetaDataFirst;
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &firstTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
-				
-
+				logger.Info("convert SkyNewsScrap unmarshalError %v",unmarshalErr) 
 			}else{
 				publishedAt = firstTypeMetaData.DatePublished.Unix()
 			}
-
+			
 			if publishedAt != 0 {
 				return
 			}
-			var secondTypeMetaData BBCNewsMetadataSecond
+
+			var secondTypeMetaData BBCSportMetaDataSecond;
 			unmarshalErr = json.Unmarshal([]byte(scriptContent), &secondTypeMetaData)
 			if unmarshalErr != nil {
-				logger.Info("convert SkyNewsScrap unmarshalError %v", unmarshalErr)
+				logger.Error("convert BBCSport unmarshalErr %v",unmarshalErr)
 				return
 			}
 			publishedAt = secondTypeMetaData.DatePublished.Unix()
@@ -212,5 +188,19 @@ func (t *Template) BBCNewsPublishedAtTimeFromScriptMetadata(document *goquery.Do
 		})
 
 	}
+	if publishedAt == 0 {
+		timeTag := document.Find("time.gs-o-bullet__text.qa-status-date.gs-u-align-middle.gs-u-display-inline").First()
+		if datetime, exists := timeTag.Attr("datetime"); exists {
+			parsedTime, err := time.Parse(time.RFC3339, datetime)
+			if err != nil {
+				logger.Error("Error parsing datetime: %v", err)
+			}
+			timestamp := parsedTime.Unix()
+			publishedAt = timestamp
+		} else {
+			fmt.Println("Datetime attribute not found")
+		}
+	}
 	return publishedAt
 }
+
