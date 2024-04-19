@@ -45,4 +45,5 @@ To get the readable content from an URL, you can use `processor.ArticleReadabili
 | publishedAtTimeStamp                 | published timeStamp,parsed by templates                    |
 
 
-
+To get the published date, publishedAtTimeStamp field can be used first, if the value is not empty. 
+To get the author of article, author field can be used first, if the value is not empty. 
