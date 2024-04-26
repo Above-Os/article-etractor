@@ -76,7 +76,7 @@ func (t *Template) YahooConverImageUrlExtractFromScriptMetadata(document *goquer
 			var currentYahooImage YahooCoverImage
 			unmarshalErr := json.Unmarshal([]byte(scriptContent), &currentYahooImage)
 			if unmarshalErr != nil {
-				log.Println("unmarshal error")
+				log.Printf("unmarshal error")
 				return
 			}
 

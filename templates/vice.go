@@ -181,7 +181,7 @@ func modifyViceInvalidJSON(input string) (string, error) {
 
 func (t *Template) ViceScrapContent(document *goquery.Document) string {
 	contents := ""
-	document.Find("div.adph").Each(func(i int, s *goquery.Selection) {
+	document.Find("div.adph,div.abc__article_embed").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
 

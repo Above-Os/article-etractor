@@ -125,9 +125,13 @@ var contentTemplatePredefinedRules = map[string]string{
 	"geektyrant.com":          "GeektyrantScrapContent",
 	"advanced-television.com": "AdTelevisionScrapContent",
 	"bleacherreport.com":      "BleadherReportScrapContent",
-
-	/*"espn.com":           "EspnScrapContent",
-	"foxsports.com":      "FoxSportsScrapContent",
+	"foxsports.com":           "FoxSportsScrapContent",
+	"polygon.com":             "PolygonScrapContent",
+	"kotaku.com":              "KotakuScrapContent",
+	"tvline.com":              "TVLineScrapContent",
+	"npr.org":                 "NprScrapContent",
+	"microsoft.com":           "MicrosoftScrapContent",
+	/*"espn.com": "EspnScrapContent",
 	"nbcsports.com":      "NBCSportsScrapContent",
 	"deadspin.com":       "DeadspinScrapContent",
 	"skynews.com":              "SkyNewsScrapContent",
@@ -173,7 +177,7 @@ var metadataTemplatePredefinedRules = map[string]string{
 	"www.bbc.com/sport":   "BBCSportsScrapMetaData",
 	"www.bbc.co.uk/sport": "BBCSportsScrapMetaData",
 	"cbssports.com":       "CBSSportsScrapMetaData",
-	".espn.com":            "ESPNScrapMetaData",
+	".espn.com":           "ESPNScrapMetaData",
 	"foxsports.com":       "FoxsportsScrapMetaData",
 	"hbr.org":             "HBRScrapMetaData",
 }
@@ -269,7 +273,7 @@ func getPredefinedContentTemplateRules(websiteURL string) (string, string) {
 
 func getPredefinedMetaDataTemplateRules(websiteURL string) (string, string) {
 	urlDomain := domain(websiteURL)
-	fmt.Printf("+++++++++++++++++++++ websiteURL %s\n",websiteURL)
+	fmt.Printf("+++++++++++++++++++++ websiteURL %s\n", websiteURL)
 	for domain, rules := range metadataTemplatePredefinedRules {
 		if strings.Contains(websiteURL, domain) {
 			return domain, rules

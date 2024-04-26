@@ -128,7 +128,7 @@ func (t *Template) SkyNewsPublishedAtTimeFromScriptMetadata(document *goquery.Do
 
 func (t *Template) SkyNewsScrapContent(document *goquery.Document) string {
 	contents := ""
-	document.Find("div.sdc-article-related-stories,div.sdc-site-video,a,span[data-label-text=Advertisement]").Each(func(i int, s *goquery.Selection) {
+	document.Find("div.sdc-article-related-stories,div.sdc-site-video,a,span[data-label-text=Advertisement],div.sdc-article-related-stories,div.sdc-article-strapline").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
 	document.Find("p").Each(func(i int, s *goquery.Selection) {
@@ -136,7 +136,7 @@ func (t *Template) SkyNewsScrapContent(document *goquery.Document) string {
 			RemoveNodes(s)
 		}
 	})
-	document.Find("figure.sdc-article-image__figure,div.sdc-article-body").Each(func(i int, s *goquery.Selection) {
+	document.Find("div.sdc-site-component-top__media,div.sdc-article-body").Each(func(i int, s *goquery.Selection) {
 		var content string
 		content, _ = goquery.OuterHtml(s)
 		contents += content

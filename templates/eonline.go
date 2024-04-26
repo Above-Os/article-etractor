@@ -144,7 +144,7 @@ func (t *Template) EOnlineScrapContent(document *goquery.Document) string {
 
 	contents := ""
 
-	document.Find("main.article-detail__main-content").Each(func(i int, s *goquery.Selection) {
+	document.Find("div.article-detail__main-content").Each(func(i int, s *goquery.Selection) {
 		var content string
 		content, _ = goquery.OuterHtml(s)
 		contents += content

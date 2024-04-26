@@ -7,7 +7,7 @@ import (
 func (t *Template) TheRegisterScrapContent(document *goquery.Document) string {
 
 	contents := ""
-	document.Find("ul.listinks").Each(func(i int, s *goquery.Selection) {
+	document.Find("ul.listinks,div[aria-hidden=true]").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
 	document.Find("div#body").Each(func(i int, s *goquery.Selection) {

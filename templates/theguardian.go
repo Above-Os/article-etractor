@@ -15,10 +15,16 @@ type TheGuardianCoverImage struct {
 func (t *Template) TheguardianScrapContent(document *goquery.Document) string {
 	contents := ""
 
-	document.Find("gu-island,aside,a.dcr-porppu,p.dcr-porppu").Each(func(i int, s *goquery.Selection) {
+	document.Find("gu-island,aside,a.dcr-porppu,p.dcr-porppu,p#EmailSignup-skip-link-8").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
 
+	document.Find("a").Each(func(i int, s *goquery.Selection) {
+		if s.Text() == "skip past newsletter promotion" {
+			RemoveNodes(s)
+		}
+
+	})
 	/*currentCoverImageUrl := t.TheGuardianImageExtractFromListScriptMetadata(document)
 	// log.Printf("current the guardian image %s",currentCoverImageUrl)
 	if currentCoverImageUrl != "" {

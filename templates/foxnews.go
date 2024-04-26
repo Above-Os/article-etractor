@@ -32,11 +32,19 @@ func (t *Template) FoxNewsScrapMetaData(document *goquery.Document) (string, str
 
 func (t *Template) FoxNewsScrapContent(document *goquery.Document) string {
 	contents := ""
-	document.Find("div.article-gating-wrapper").Each(func(i int, s *goquery.Selection) {
+	document.Find("div.article-gating-wrapper,div.ad-container").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
+	document.Find("a").Each(func(i int, s *goquery.Selection) {
+		text := s.Text()
 
-	document.Find("div.paywall").Each(func(i int, s *goquery.Selection) {
+		if strings.HasPrefix(text, "MORE:") || strings.HasPrefix(text, "close") {
+			RemoveNodes(s)
+		}
+
+	})
+
+	document.Find("div.paywall,div.article-body").Each(func(i int, s *goquery.Selection) {
 		var content string
 		content, _ = goquery.OuterHtml(s)
 		contents += content

@@ -67,7 +67,7 @@ type CNCFMetaData struct {
 func (t *Template) CNCFScrapContent(document *goquery.Document) string {
 
 	contents := ""
-	document.Find("div.social-share,figure.wp-block-embed-twitter").Each(func(i int, s *goquery.Selection) {
+	document.Find("div.social-share,figure.wp-block-embed-twitter,div.post-author").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
 

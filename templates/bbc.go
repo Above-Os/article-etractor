@@ -78,7 +78,7 @@ type BBCNewsMetaData struct {
 
 func (t *Template) BBCScrapContent(document *goquery.Document) string {
 	contents := ""
-	document.Find("header,div[data-component=topic-list],div[data-component=links-block],span.visually-hidden,h1#main-heading").Each(func(i int, s *goquery.Selection) {
+	document.Find("header,div[data-testid=byline],div[data-component=topic-list],div[data-component=links-block],span.visually-hidden,h1#main-heading,div[data-component=byline-block],div[data-component=timestamp-block]").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
 	document.Find("div.description").Each(func(i int, s *goquery.Selection) {

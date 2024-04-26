@@ -1267,8 +1267,13 @@ func (r *Readability) cleanConditionally(element *html.Node, tag string) {
 			return false
 		}
 
+		//espn remove author https://www.espn.com/mlb/story/_/id/40016415/giants-blake-snell-placed-15-day-il-adductor-strain
+		className := className(node)
+		if className == "article-meta" {
+			return true
+		}
 		// Do not clean placeholders
-		if indexOf(placeholerClasses, className(node)) != -1 {
+		if indexOf(placeholerClasses, className) != -1 {
 			return false
 		}
 

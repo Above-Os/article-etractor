@@ -48,7 +48,7 @@ type FoxsportsMetaData struct {
 func (t *Template) FoxSportsScrapContent(document *goquery.Document) string {
 
 	contents := ""
-	document.Find("h1.story-title").Each(func(i int, s *goquery.Selection) {
+	document.Find("h1.story-title,div.story-header-container,div.fwAdContainer,div.storyFavoriteContainer,div.story-social-group,div.story-topic-group,div.story-favorites-section-add").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
 

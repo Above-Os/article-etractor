@@ -2,7 +2,6 @@ package templates
 
 import (
 	"github.com/PuerkitoBio/goquery"
-	//"recommend.common/logger"
 )
 
 func (t *Template) IGNScrapContent(document *goquery.Document) string {

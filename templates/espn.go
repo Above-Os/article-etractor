@@ -74,10 +74,13 @@ type ESPNMetaDataWithoutAuthor struct {
 func (t *Template) EspnScrapContent(document *goquery.Document) string {
 
 	contents := ""
-	document.Find("aside.float-r,div.article-meta,div.content-reactions_reactions-wrapper").Each(func(i int, s *goquery.Selection) {
+	/*document.Find("header.article-header,aside.float-r,div.article-meta,div.content-reactions_reactions-wrapper").Each(func(i int, s *goquery.Selection) {
+		RemoveNodes(s)
+	})*/
+	document.Find("h2").Each(func(i int, s *goquery.Selection) {
 		RemoveNodes(s)
 	})
-	document.Find("div.article-body").Each(func(i int, s *goquery.Selection) {
+	document.Find("article#article").Each(func(i int, s *goquery.Selection) {
 		var content string
 		content, _ = goquery.OuterHtml(s)
 		contents += content

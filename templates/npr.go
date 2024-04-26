@@ -32,11 +32,7 @@ type NprMetadata struct {
 		Name []string `json:"name"`
 	} `json:"author"`
 	Description string `json:"description"`
-	Image       struct {
-		Type string `json:"@type"`
-		URL  string `json:"url"`
-	} `json:"image"`
-	SubjectOf []struct {
+	SubjectOf   []struct {
 		Type         string `json:"@type"`
 		Name         string `json:"name"`
 		Description  string `json:"description"`
@@ -121,4 +117,19 @@ func (t *Template) NprPublishedAtTimeFromScriptMetadata(document *goquery.Docume
 
 	}
 	return publishedAt
+}
+
+func (t *Template) NprScrapContent(document *goquery.Document) string {
+	contents := ""
+
+	document.Find("div.internallink,div.enlarge-options,div.enlarge_measure,div.enlarge_html").Each(func(i int, s *goquery.Selection) {
+		RemoveNodes(s)
+
+	})
+	document.Find("div#storytext").Each(func(i int, s *goquery.Selection) {
+		var content string
+		content, _ = goquery.OuterHtml(s)
+		contents += content
+	})
+	return contents
 }
