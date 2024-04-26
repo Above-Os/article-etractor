@@ -61,6 +61,7 @@ var contentPredefinedRules = map[string]string{
 
 var contentPostExtractorTemplateRules = map[string]string{
 	"weixin.qq.com": "WechatPostExtractor",
+	"espn.com":      "EspnPostExtractor",
 }
 
 var contentTemplatePredefinedRules = map[string]string{
